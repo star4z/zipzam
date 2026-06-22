@@ -19,7 +19,7 @@ class Puzzle:
         for row in self.cells:
             print(" ".join((f"{cell.cage.value:0{max_len}}{cell.cage.sign}" for cell in row)))
             if self.has_solution():
-                print(" ".join(f"{cell.possibilities[0]:0{max_len}}" for cell in row))
+                print(" ".join(f"{cell.possibilities[0]:>{max_len + 1}}" for cell in row))
             else:
                 print(" ".join(f"{i if i in cell.possibilities else ' '}" for cell in row for i in range(1, 3)))
                 print(" ".join(f"{i if i in cell.possibilities else ' '}" for cell in row for i in range(3, 5)))
