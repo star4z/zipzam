@@ -17,7 +17,7 @@ class Puzzle:
     def print(self):
         max_len = max(len(str(cage.value)) for cage in self.cages)
         for row in self.cells:
-            print(" ".join((f"{cell.cage.value:0{max_len}}{cell.cage.sign}" for cell in row)))
+            print(" ".join((f"{cell.cage.value:>{max_len}}{cell.cage.sign}" for cell in row)))
             if self.has_solution():
                 print(" ".join(f"{cell.possibilities[0]:>{max_len + 1}}" for cell in row))
             else:
