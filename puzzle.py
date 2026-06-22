@@ -102,6 +102,7 @@ class Puzzle:
     def reduce_possibilities_from_rows_and_columns(self):
         def reduce_group(group):
             """Reduces possibilities within a specific group (row or column)."""
+            # --- 1. Naked Subsets (Singles, Pairs, Triplets, etc.) ---
             for cell in group:
                 poss_set = set(cell.possibilities)
                 n = len(poss_set)
@@ -120,6 +121,18 @@ class Puzzle:
                                 p for p in other_cell.possibilities
                                 if p not in poss_set
                             ]
+
+            # --- 2. Hidden Singles ---
+            # Flatten all possibilities in the group to count occurrences
+            all_possibilities = [p for c in group for p in c.possibilities]
+
+            for p in set(all_possibilities):
+                if all_possibilities.count(p) == 1:
+                    # Find the unique cell that contains this possibility
+                    for cell in group:
+                        if p in cell.possibilities:
+                            cell.possibilities = [p]
+                            break
 
         # Apply to rows
         for row in self.cells:
