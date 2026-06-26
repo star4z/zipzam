@@ -6,10 +6,10 @@ from puzzle import Puzzle
 
 def solve_puzzle(puzzle: Puzzle):
     start_time = time.perf_counter()
-    resolved_cells = -1
+    resolved_possibilities = -1
     passes = 0
-    while puzzle.resolved_cells() > resolved_cells:
-        resolved_cells = puzzle.resolved_cells()
+    while puzzle.resolved_possibilities() > resolved_possibilities:
+        resolved_possibilities = puzzle.resolved_possibilities()
         puzzle.reduce_possibilities_from_cages()
         puzzle.reduce_possibilities_from_rows_and_columns()
         passes += 1
