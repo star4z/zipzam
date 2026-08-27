@@ -3,6 +3,15 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# Node modules
+node_modules/
+dist/
+*.node
+
+# SVG visualization files
+puzzle_images/
+*.svg
+
 # C extensions
 *.so
 

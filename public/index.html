@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KenKen Solver Visualizer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 900px;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .info-bar {
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .status {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .status-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .status-label {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .status-value {
+      font-size: 16px;
+      margin-top: 4px;
+    }
+
+    .puzzle-display {
+      display: flex;
+      justify-content: center;
+      margin: 30px 0;
+      min-height: 500px;
+    }
+
+    #puzzleCanvas {
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      background: white;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin: 30px 0;
+    }
+
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .puzzle-selector {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .puzzle-selector label {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .puzzle-selector select {
+      padding: 10px 12px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: border-color 0.3s;
+    }
+
+    .puzzle-selector select:hover {
+      border-color: #667eea;
+    }
+
+    .puzzle-selector select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .step-display {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      margin: 20px 0;
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 8px;
+    }
+
+    .step-display button {
+      padding: 10px 16px;
+      font-size: 12px;
+    }
+
+    .step-info {
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .step-info strong {
+      color: #333;
+      font-size: 16px;
+    }
+
+    .keyboard-hint {
+      text-align: center;
+      color: #999;
+      font-size: 12px;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      .controls {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .status {
+        gap: 15px;
+      }
+
+      #puzzleCanvas {
+        max-width: 100%;
+        height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧩 KenKen Solver</h1>
+
+    <div class="puzzle-selector">
+      <label for="puzzleSelect">Puzzle:</label>
+      <select id="puzzleSelect">
+        <option value="">Loading...</option>
+      </select>
+    </div>
+
+    <div class="info-bar">
+      <div class="status">
+        <div class="status-item">
+          <span class="status-label">Resolved Cells</span>
+          <span class="status-value" id="resolvedCells">0/36</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Resolved Possibilities</span>
+          <span class="status-value" id="resolvedPoss">0/180</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Status</span>
+          <span class="status-value" id="status">-</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="puzzle-display">
+      <canvas id="puzzleCanvas"></canvas>
+    </div>
+
+    <div class="step-display">
+      <button class="btn-primary" id="prevStepBtn" title="Previous Step (↑)">← Prev Step</button>
+      <div class="step-info">
+        Step <strong id="currentStep">0</strong> / <strong id="maxStep">0</strong>
+        (Pass <strong id="currentPass">0</strong> / <strong id="maxPass">0</strong>)
+      </div>
+      <button class="btn-primary" id="nextStepBtn" title="Next Step (↓)">Next Step →</button>
+    </div>
+
+    <div class="controls">
+      <button class="btn-primary" id="firstStepBtn">⏮ First</button>
+      <button class="btn-primary" id="lastStepBtn">⏭ Last (Solve)</button>
+      <button class="btn-primary" id="prevPuzzleBtn" title="Previous Puzzle (←)">← Puzzle</button>
+      <button class="btn-primary" id="nextPuzzleBtn" title="Next Puzzle (→)">Puzzle →</button>
+    </div>
+
+    <div class="keyboard-hint">
+      💡 Keyboard shortcuts: ← → for puzzles, ↑ ↓ for steps, Home/End for first/last
+    </div>
+  </div>
+
+  <script>
+    const cellSize = 100;
+    const margin = 40;
+    const titleHeight = 40;
+    const gridSize = 6;
+
+    let currentPuzzleIdx = 0;
+    let currentStepIdx = 0;
+    let puzzles = [];
+    let currentData = null;
+
+    const canvas = document.getElementById('puzzleCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // UI Elements
+    const puzzleSelect = document.getElementById('puzzleSelect');
+    const resolvedCellsEl = document.getElementById('resolvedCells');
+    const resolvedPossEl = document.getElementById('resolvedPoss');
+    const statusEl = document.getElementById('status');
+    const currentStepEl = document.getElementById('currentStep');
+    const maxStepEl = document.getElementById('maxStep');
+    const currentPassEl = document.getElementById('currentPass');
+    const maxPassEl = document.getElementById('maxPass');
+
+    // Buttons
+    const prevStepBtn = document.getElementById('prevStepBtn');
+    const nextStepBtn = document.getElementById('nextStepBtn');
+    const firstStepBtn = document.getElementById('firstStepBtn');
+    const lastStepBtn = document.getElementById('lastStepBtn');
+    const prevPuzzleBtn = document.getElementById('prevPuzzleBtn');
+    const nextPuzzleBtn = document.getElementById('nextPuzzleBtn');
+
+    async function loadPuzzles() {
+      const res = await fetch('/api/puzzles');
+      puzzles = await res.json();
+      
+      puzzleSelect.innerHTML = puzzles
+        .map((p, i) => `<option value="${i}">${p.name}</option>`)
+        .join('');
+      
+      puzzleSelect.addEventListener('change', (e) => {
+        currentPuzzleIdx = parseInt(e.target.value);
+        currentStepIdx = 0;
+        loadAndRender();
+      });
+
+      await loadAndRender();
+    }
+
+    async function loadAndRender() {
+      const puzzle = puzzles[currentPuzzleIdx];
+      const res = await fetch(`/api/puzzle/${puzzle.name}/${currentStepIdx}`);
+      currentData = await res.json();
+
+      puzzleSelect.value = currentPuzzleIdx;
+      render();
+      updateUI();
+    }
+
+    function render() {
+      const width = gridSize * cellSize + 2 * margin;
+      const height = gridSize * cellSize + 2 * margin + titleHeight;
+
+      canvas.width = width;
+      canvas.height = height;
+
+      // Background
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, width, height);
+
+      // Title
+      ctx.fillStyle = '#333';
+      ctx.font = 'bold 14px Arial';
+      ctx.textAlign = 'center';
+      const status = currentData.has_solution ? 'solved' : 'in progress';
+      ctx.fillText(
+        `${currentData.puzzle} | pass ${currentData.pass}/${currentData.maxPass} | ${status}`,
+        width / 2,
+        20
+      );
+      ctx.fillText(
+        `resolved: ${currentData.resolved_cells}/36 cells, ${currentData.resolved_possibilities}/180 possibilities`,
+        width / 2,
+        35
+      );
+
+      // Draw cells
+      const poss = currentData.possibilities;
+      
+      for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+          const x = margin + j * cellSize;
+          const y = margin + titleHeight + i * cellSize;
+
+          // White background
+          ctx.fillStyle = 'white';
+          ctx.fillRect(x, y, cellSize, cellSize);
+
+          // Light border
+          ctx.strokeStyle = '#cccccc';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x, y, cellSize, cellSize);
+
+          // Cell possibilities
+          const cellPoss = poss[i][j];
+
+          if (cellPoss.length === 1) {
+            // Solved cell
+            ctx.fillStyle = '#1a1a1a';
+            ctx.font = 'bold 28px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(cellPoss[0].toString(), x + cellSize / 2, y + cellSize / 2 + 8);
+          } else {
+            // Show possibilities
+            ctx.fillStyle = '#4a76d4';
+            ctx.font = '8px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            for (const val of cellPoss) {
+              const r = Math.floor((val - 1) / 3);
+              const c = (val - 1) % 3;
+              const cx = x + 20 + c * 30;
+              const cy = y + 35 + r * 30;
+              ctx.fillText(val.toString(), cx, cy);
+            }
+          }
+        }
+      }
+    }
+
+    function updateUI() {
+      resolvedCellsEl.textContent = `${currentData.resolved_cells}/36`;
+      resolvedPossEl.textContent = `${currentData.resolved_possibilities}/180`;
+      statusEl.textContent = currentData.has_solution ? '✓ Solved' : 'In Progress';
+      currentStepEl.textContent = currentData.step;
+      maxStepEl.textContent = currentData.maxStep;
+      currentPassEl.textContent = currentData.pass;
+      maxPassEl.textContent = currentData.maxPass;
+
+      prevStepBtn.disabled = currentStepIdx === 0;
+      nextStepBtn.disabled = currentStepIdx === currentData.maxStep;
+      prevPuzzleBtn.disabled = currentPuzzleIdx === 0;
+      nextPuzzleBtn.disabled = currentPuzzleIdx === puzzles.length - 1;
+    }
+
+    // Event listeners
+    prevStepBtn.addEventListener('click', () => {
+      if (currentStepIdx > 0) {
+        currentStepIdx--;
+        loadAndRender();
+      }
+    });
+
+    nextStepBtn.addEventListener('click', () => {
+      if (currentStepIdx < currentData.maxStep) {
+        currentStepIdx++;
+        loadAndRender();
+      }
+    });
+
+    firstStepBtn.addEventListener('click', () => {
+      currentStepIdx = 0;
+      loadAndRender();
+    });
+
+    lastStepBtn.addEventListener('click', () => {
+      currentStepIdx = currentData.maxStep;
+      loadAndRender();
+    });
+
+    prevPuzzleBtn.addEventListener('click', () => {
+      if (currentPuzzleIdx > 0) {
+        currentPuzzleIdx--;
+        currentStepIdx = 0;
+        loadAndRender();
+      }
+    });
+
+    nextPuzzleBtn.addEventListener('click', () => {
+      if (currentPuzzleIdx < puzzles.length - 1) {
+        currentPuzzleIdx++;
+        currentStepIdx = 0;
+        loadAndRender();
+      }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevPuzzleBtn.click();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextPuzzleBtn.click();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        prevStepBtn.click();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        nextStepBtn.click();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        firstStepBtn.click();
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        lastStepBtn.click();
+      }
+    });
+
+    // Load on page start
+    loadPuzzles();
+  </script>
+</body>
+</html>

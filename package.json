@@ -1,0 +1,18 @@
+{
+  "name": "kenken-solver",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "build": "tsc",
+    "bundle": "esbuild src/browser.ts --bundle --outfile=dist/bundle.js --format=iife --platform=browser",
+    "start": "node dist/main.js",
+    "visualize": "node dist/visualizer.js",
+    "web": "node dist/server.js"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "esbuild": "^0.21.5",
+    "typescript": "^5.5.4"
+  }
+}
