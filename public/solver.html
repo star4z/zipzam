@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KenKen Solver</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        width: 100%;
+        max-width: 900px;
+        padding: 30px;
+      }
+
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 28px;
+      }
+
+      .info-bar {
+        text-align: center;
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .status {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        flex-wrap: wrap;
+        font-size: 13px;
+        color: #666;
+      }
+
+      .status-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .status-label {
+        font-weight: 600;
+        color: #333;
+      }
+
+      .status-value {
+        font-size: 16px;
+        margin-top: 4px;
+      }
+
+      .puzzle-display {
+        display: flex;
+        justify-content: center;
+        margin: 30px 0;
+        min-height: 500px;
+      }
+
+      #puzzleCanvas {
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        background: white;
+        max-width: 100%;
+        height: auto;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+        margin: 30px 0;
+      }
+
+      button {
+        padding: 12px 18px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .btn-primary {
+        background: #667eea;
+        color: white;
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-primary:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      .puzzle-selector {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      .puzzle-selector label {
+        font-weight: 600;
+        color: #333;
+      }
+
+      .puzzle-selector select {
+        padding: 10px 12px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: border-color 0.3s;
+      }
+
+      .puzzle-selector select:hover {
+        border-color: #667eea;
+      }
+
+      .puzzle-selector select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .step-display {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        margin: 20px 0;
+        padding: 15px;
+        background: #f5f5f5;
+        border-radius: 8px;
+      }
+
+      .step-display button {
+        padding: 10px 16px;
+        font-size: 12px;
+      }
+
+      .step-info {
+        text-align: center;
+        font-size: 14px;
+        color: #666;
+      }
+
+      .step-info strong {
+        color: #333;
+        font-size: 16px;
+      }
+
+      .keyboard-hint {
+        text-align: center;
+        color: #999;
+        font-size: 12px;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 20px;
+        }
+
+        h1 {
+          font-size: 22px;
+        }
+
+        .controls {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .status {
+          gap: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧩 KenKen Solver</h1>
+
+      <div class="puzzle-selector">
+        <label for="puzzleSelect">Puzzle:</label>
+        <select id="puzzleSelect"></select>
+      </div>
+
+      <div class="info-bar">
+        <div class="status">
+          <div class="status-item">
+            <span class="status-label">Resolved Cells</span>
+            <span class="status-value" id="resolvedCells">0/36</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Resolved Possibilities</span>
+            <span class="status-value" id="resolvedPoss">0/180</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Status</span>
+            <span class="status-value" id="status">-</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="puzzle-display">
+        <canvas id="puzzleCanvas"></canvas>
+      </div>
+
+      <div class="step-display">
+        <button class="btn-primary" id="prevStepBtn" title="Previous Step (↑)">← Prev Step</button>
+        <div class="step-info">
+          Step <strong id="currentStep">0</strong> / <strong id="maxStep">0</strong>
+          (Pass <strong id="currentPass">0</strong> / <strong id="maxPass">0</strong>)
+        </div>
+        <button class="btn-primary" id="nextStepBtn" title="Next Step (↓)">Next Step →</button>
+      </div>
+
+      <div class="controls">
+        <button class="btn-primary" id="firstStepBtn">⏮ First</button>
+        <button class="btn-primary" id="lastStepBtn">⏭ Last (Solve)</button>
+        <button class="btn-primary" id="prevPuzzleBtn" title="Previous Puzzle (←)">← Puzzle</button>
+        <button class="btn-primary" id="nextPuzzleBtn" title="Next Puzzle (→)">Puzzle →</button>
+      </div>
+
+      <div class="keyboard-hint">
+        💡 Keyboard shortcuts: ← → for puzzles, ↑ ↓ for steps, Home/End for first/last
+      </div>
+    </div>
+
+    <script src="./bundle.js"></script>
+    <script>
+      window.initPuzzleViewer(
+        document.getElementById('puzzleCanvas'),
+        document.getElementById('resolvedCells'),
+        document.getElementById('resolvedPoss'),
+        document.getElementById('status'),
+        document.getElementById('currentStep'),
+        document.getElementById('maxStep'),
+        document.getElementById('currentPass'),
+        document.getElementById('maxPass'),
+        document.getElementById('puzzleSelect'),
+        document.getElementById('prevStepBtn'),
+        document.getElementById('nextStepBtn'),
+        document.getElementById('firstStepBtn'),
+        document.getElementById('lastStepBtn'),
+        document.getElementById('prevPuzzleBtn'),
+        document.getElementById('nextPuzzleBtn')
+      );
+    </script>
+  </body>
+</html>

@@ -6,9 +6,11 @@
   "scripts": {
     "build": "tsc",
     "bundle": "esbuild src/browser.ts --bundle --outfile=dist/bundle.js --format=iife --platform=browser",
+    "build:browser": "node scripts/build-browser.js",
     "start": "node dist/main.js",
     "visualize": "node dist/visualizer.js",
-    "web": "node dist/server.js"
+    "web": "node dist/server.js",
+    "prebundle": "npm run build:browser"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",
